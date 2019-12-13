@@ -1,23 +1,20 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
 
 #include "coroutine.h"
-
 
 int coroutine_epoll_create() {
     return epoll_create(1024);
 }
 
-int coroutine_epoll_wait(struct timespec t) {
+int coroutine_epoll_wait() {
 	schedule_t *sched = get_schedule();
-	return epoll_wait(sched->epollfd, sched->eventlist, CO_MAX_EVENTS, t.tv_sec*1000.0 + t.tv_nsec/1000000.0);
+	return epoll_wait(sched->epollfd, sched->eventlist, CO_MAX_EVENTS, -1);
 }
 
-int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events) {
-	schedule_t *sched = get_sched();
+static int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events) {
+	schedule_t *sched = get_schedule();
 
 	struct epoll_event ev;
 	ev.events = __events;
@@ -26,19 +23,19 @@ int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events) {
 	return epoll_ctl(sched->epollfd, __op, __fd, &ev);
 }
 
-int coroutine_epoll_inner(int fd, uint32_t __events ,int timeout) {
+static int coroutine_inner_process(int fd, uint32_t __events) {
 
 	schedule_t *sched = get_schedule();
 	coroutine_t *co = sched->current;
+	printf("yield---co's address: %p, sched's address: %p\n", co, co->sched);
+
 	// add events
 	coroutine_epoll_ctl(EPOLL_CTL_ADD, fd, __events);
 	co->fd = fd;
 	co->events = __events;
+	co->status = CO_STATUS_WAIT;
 	// add to wait tree
-	/*
-		add code here
-	*/
-
+	rbtree_insert(sched->wait_tree, fd, co);
 	// it's time to yield.
 	coroutine_yield(co);
 
@@ -46,24 +43,39 @@ int coroutine_epoll_inner(int fd, uint32_t __events ,int timeout) {
 	coroutine_epoll_ctl(EPOLL_CTL_DEL, fd, __events);
 	co->fd = -1;
 	co->events = 0;
+	co->status = CO_STATUS_RUNNING;
+
 	// remove from wait tree
-	/*
-		add code here
-	*/
+	rbtree_delete(sched->wait_tree, fd);
 
 	return 0;
 
 }
 
+int coroutine_socket(int domain, int type, int protocol) {
+	int fd = socket(domain, type, protocol);
+	if (fd == -1) {
+		printf("Failed to create a new socket\n");
+		return -1;
+	}
+	int ret = fcntl(fd, F_SETFL, O_NONBLOCK);
+	if (ret == -1) {
+		close(ret);
+		return -1;
+	}
+	int reuse = 1;
+	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
+
+	return fd;
+}
+
 
 int coroutine_accept(int fd, struct sockaddr *addr, socklen_t *len) {
 	int sockfd;
-	int timeout;
-	coroutine_t *co = get_schedule()->current;
 
 	while(1) {
 		uint32_t __events = EPOLLIN | EPOLLERR | EPOLLHUP;
-		coroutine_epoll_inner(fd, __events, timeout);
+		coroutine_inner_process(fd, __events);
 
 		sockfd = accept(fd, addr, len);
 		if(sockfd < 0) {
@@ -99,7 +111,7 @@ ssize_t coroutine_read(int fd, void *buf, size_t len) {
 
 	while(1)
 	{
-		coroutine_epoll_inner(fd, __events, 0);
+		coroutine_inner_process(fd, __events);
 	
 		n = read(fd, buf, len);
 
@@ -122,7 +134,7 @@ ssize_t coroutine_write(int fd, void *buf, size_t len) {
 
 	while(1) 
 	{
-		coroutine_epoll_inner(fd,__events, 0);
+		coroutine_inner_process(fd,__events);
 
 		n = write(fd, buf, len);
 

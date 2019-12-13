@@ -211,8 +211,20 @@ static void rbtree_insert_fixup(RBRoot *root, Node *node) {
 *     root 红黑树的根
 *     node 插入的结点        // 对应《算法导论》中的z
 */
-void rbtree_insert(RBRoot *root, Node *node)
-{
+void rbtree_insert(RBRoot *root, Type key, coroutine_t *co)
+{   
+    Node *node = (Node *)malloc(sizeof(Node));
+    if(node == NULL) {
+        printf("Fail to malloc\n");
+        return;
+    }
+    node->key = key;
+    node->co = co;
+    node->color = BLACK;
+    node->parent = NULL;
+    node->left = NULL;
+    node->right = NULL;
+
     Node *y = NULL;
     Node *x = root->node;
 
@@ -261,7 +273,7 @@ static void rbtree_delete_fixup(RBRoot *root, Node *node, Node *parent)
 {
     Node *other;
 
-    while ((!node || rb_is_black(node)) && node != root->node)
+    while ((!node || RB_IS_BLACK(node)) && node != root->node)
     {
         if (parent->left == node)
         {
@@ -355,7 +367,7 @@ static void rbtree_delete_fixup(RBRoot *root, Node *node, Node *parent)
 void rbtree_delete(RBRoot *root, Type key)
 {   
 
-    Node *node = rbtree_search(root->node, key);
+    Node *node = rbtree_search(root, key);
     if(node == NULL) return;
 
     Node *child, *parent;
@@ -374,7 +386,7 @@ void rbtree_delete(RBRoot *root, Type key)
             replace = replace->left;
 
         // "node节点"不是根节点(只有根节点不存在父节点)
-        if (rb_parent(node))
+        if (RB_PARENT(node))
         {
             if (RB_PARENT(node)->left == node)
                 RB_PARENT(node)->left = replace;

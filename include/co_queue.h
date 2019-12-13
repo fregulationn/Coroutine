@@ -4,15 +4,15 @@
 struct coroutine;
 typedef struct coroutine coroutine_t;
 
-struct QUENODE {
+typedef struct QueNode {
     coroutine_t *co;
-    struct QUENODE *next;
+    struct QueNode *next;
 
-};
+}QueNode_t;
 
 typedef struct Queue {
-    struct QUENODE *head;
-    struct QUENODE *tail;
+    QueNode_t *head;
+    QueNode_t *tail;
     
 }Queue_t;
 
@@ -25,6 +25,6 @@ void QUE_REMOVE(Queue_t *);
 // 队首元素
 coroutine_t* QUE_FIRST(Queue_t *);
 // 队列初始化
-void QUE_INIT(Queue_t *);
+void QUE_INIT(Queue_t **);
 
 #endif

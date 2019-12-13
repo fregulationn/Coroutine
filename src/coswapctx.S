@@ -5,7 +5,18 @@
 
 coswapctx:
 
-#ifdef __i386__
+#if defined(__i386__)
+
+//----- --------
+// 32 bit
+// | regs[0]: ret |
+// | regs[1]: ebx |
+// | regs[2]: ecx |
+// | regs[3]: edx |
+// | regs[4]: edi |
+// | regs[5]: esi |
+// | regs[6]: ebp |
+// | regs[7]: eax |  = esp
 
     .text
     .p2align 2,,3
@@ -29,7 +40,7 @@ coswapctx:
 
     ret
 
-#elif __x86_64__
+#elif defined(__x86_64__)
 
 //-------------
 // 64 bit
@@ -50,11 +61,13 @@ coswapctx:
 
     .text
     .p2align 4,,15
-    movq %rsp, 104(%rsi)        # very hard to understand
+    leaq (%rsp),%rax
+    movq %rax, 104(%rsi)
     movq %rbx, 96(%rsi)         
     movq %rcx, 88(%rsi)
     movq %rdx, 80(%rsi)
-    movq (%rax), 72(%rsi)
+    movq (%rax), %rax
+    movq %rax, 72(%rsi)
     movq %rsi, 64(%rsi)
     movq %rdi, 56(%rsi)
     movq %rbp, 48(%rsi)
@@ -67,22 +80,48 @@ coswapctx:
     # clear rax to indicate success
     xorq %rax, %rax
 
-    movq 48(%rsi), %rbp
-    movq 104(%rsi), %rsp
-    movq (%rsi), %r15
-    movq 8(%rsi), %r14
-    movq 16(%rsi), %r13
-    movq 24(%rsi), %r12
-    movq 32(%rsi), %r9
-    movq 40(%rsi), %r8
-    movq 56(%rsi), %rdi
-    movq 80(%rsi), %rdx
-    movq 88(%rsi), %rcx
-    movq 96(%rsi), %rbx
-	leaq 8(%rsp), %rsp
-	pushq 72(%rsi)
-    movq 64(%rsi), %rsi
+    movq 48(%rdi), %rbp
+    movq 104(%rdi), %rsp
+    movq (%rdi), %r15
+    movq 8(%rdi), %r14
+    movq 16(%rdi), %r13
+    movq 24(%rdi), %r12
+    movq 32(%rdi), %r9
+    movq 40(%rdi), %r8
+    movq 56(%rdi), %rdi
+    movq 80(%rdi), %rdx
+    movq 88(%rdi), %rcx
+    movq 96(%rdi), %rbx
+	leaq 8(%rsp), %rsp    //rsp是当前栈顶，8(%rsp)是跳过rip，指向调用coswapctx函数之前的栈顶
+	pushq 72(%rdi)
+    movq 64(%rdi), %rsi
 
     ret
+
+
+/*
+    .text
+    .p2align 4,,15
+    
+    movq %rsp, 0(%rsi)
+    movq %rbp, 8(%rsi)
+    movq (%rsp), %rax
+    movq %rax, 16(%rsi)
+    movq %rbx, 24(%rsi)
+    movq %r12, 32(%rsi)
+    movq %r13, 40(%rsi)
+    movq %r14, 48(%rsi)
+    movq %r15, 56(%rsi)
+    movq 56(%rdi), %r15
+    movq 48(%rdi), %r14
+    movq 40(%rdi), %r13
+    movq 32(%rdi), %r12
+    movq 24(%rdi), %rbx
+    movq 8(%rdi), %rbp
+    movq 0(%rdi), %rsp
+    movq 16(%rdi), %rax
+    movq %rax, (%rsp)
+    ret
+*/
 
 #endif

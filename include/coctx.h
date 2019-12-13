@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef struct {
+#if defined(__x86_64__)
     void *r15;
     void *r14;
     void *r13;
@@ -19,6 +20,30 @@ typedef struct {
     void *rcx;
     void *rbx;
     void *rsp;
+    // void *esp; //
+	// void *ebp;
+	// void *eip;
+	// void *edi;
+	// void *esi;
+	// void *ebx;
+	// void *r1;
+	// void *r2;
+	// void *r3;
+	// void *r4;
+	// void *r5;
+
+#elif defined(__i386__)
+    void *eip
+    void *ebx
+    void *ecx
+    void *edx
+    void *edi
+    void *esi
+    void *ebp
+    void *eax
+
+#endif
+
 } coctx_t;
 
 struct coroutine;

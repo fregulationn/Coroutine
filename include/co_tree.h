@@ -35,7 +35,7 @@ void rbtree_left_rotate(RBRoot *root, Node *x);
 // right rotate
 void rbtree_right_rotate(RBRoot *root, Node *y);
 // insert
-void rbtree_insert(RBRoot *root, Node *node);
+void rbtree_insert(RBRoot *root, Type key, coroutine_t *co);
 // delete
 void rbtree_delete(RBRoot *root, Type key);
 // search
