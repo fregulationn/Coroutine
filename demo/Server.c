@@ -39,12 +39,11 @@ void server(void *arg) {
     bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
     listen(sockfd, 128);
-    int i = 0;
+    
     while(1)
     {
-        printf("%d time\n", ++i);
         cli_fd = coroutine_accept(sockfd, (struct sockaddr *)&cliaddr, &len);
-        printf("cli_fd: %d\n", cli_fd);
+        printf("%s connect server\n", inet_ntoa(cliaddr.sin_addr));
         coroutine_t *co;
         coroutine_create(&co, handler, (void *)&cli_fd);
     }

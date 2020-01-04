@@ -34,7 +34,7 @@ int coroutine_create(coroutine_t **new_co, co_func fn, void *arg) {
         printf("Fail to create new coroutine\n");
         return -1;
     }
-    printf("create---co's address: %p, sched's address: %p\n", co, sched);
+    
     int ret = posix_memalign(&co->stack, getpagesize(), sched->stack_size);
 	if (ret) {
 		printf("Failed to allocate stack for new coroutine\n");
@@ -50,13 +50,15 @@ int coroutine_create(coroutine_t **new_co, co_func fn, void *arg) {
     co->fd = -1;
     co->events = 0;
     co->birth = coroutine_usec_now();
+    co->id = sched->spawned_coroutines++;
 
     *new_co = co;
     
     // add to ready queue
     QUE_INSERT(sched->ready, co);
-    if(sched->current != NULL)
-    printf("current---co's address: %p, sched's address: %p\n", sched->current, sched->current->sched);
+    
+    printf("create coroutine %lu\n", co->id);
+
     return 0;
 }
 
@@ -74,7 +76,7 @@ int coroutine_resume(coroutine_t *co) {
     }
     
     schedule_t *sched = get_schedule();
-    printf("resume---co's address: %p, sched's address: %p\n", co, co->sched);
+    printf("resume coroutine %lu\n", co->id);
     sched->current = co;
     // swap context
     coswapctx(&co->ctx, &sched->ctx);

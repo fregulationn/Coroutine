@@ -20,17 +20,6 @@ typedef struct {
     void *rcx;
     void *rbx;
     void *rsp;
-    // void *esp; //
-	// void *ebp;
-	// void *eip;
-	// void *edi;
-	// void *esi;
-	// void *ebx;
-	// void *r1;
-	// void *r2;
-	// void *r3;
-	// void *r4;
-	// void *r5;
 
 #elif defined(__i386__)
     void *eip

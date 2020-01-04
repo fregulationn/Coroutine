@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define SERVER_IPADDR  "192.168.8.100"
+#define SERVER_IPADDR  "192.168.8.101"
 #define SERVER_PORT    8086
 
 int main() {

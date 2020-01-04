@@ -27,6 +27,7 @@ int schedule_create(int stack_size) {
     sched->num_new_events = 0;
     sched->current = NULL;
     sched->birth = coroutine_usec_now();
+    sched->spawned_coroutines = 0;
 
     // create ready queue
     QUE_INIT(&sched->ready);
@@ -82,7 +83,7 @@ void schedule_running() {
             // 运行新加入的协程
             coroutine_resume(co);
         }
-        printf("start epoll wait\n");
+        
         nready = coroutine_epoll_wait();
         for(i = 0; i < nready; i++) {
             ev = sched->eventlist[i];

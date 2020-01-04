@@ -50,6 +50,8 @@ typedef struct coroutine {
     int fd;
     // 等待的事件
     uint32_t events;
+    // id
+    uint64_t id;
 
 }coroutine_t;
 
@@ -70,6 +72,9 @@ typedef struct schedule {
     Queue_t *ready;
     Queue_t *dead;
     RBRoot *wait_tree;
+
+    // allocate id for new-created coroutines
+    uint64_t spawned_coroutines;
 
 }schedule_t;
 

@@ -102,7 +102,7 @@ void rbtree_right_rotate(RBRoot *root, Node *y) {
     if(x->right != NULL) {
         x->right->parent = y;
     }
-
+    
     // set y's parent as x's parent
     x->parent = y->parent;
 
@@ -118,7 +118,7 @@ void rbtree_right_rotate(RBRoot *root, Node *y) {
     }
 
     // set y as x's right chld
-    y = x->right;
+    x->right = y;
 
     // set y's parent as x
     y->parent = x;
@@ -183,7 +183,7 @@ static void rbtree_insert_fixup(RBRoot *root, Node *node) {
                 continue;
             }
 
-            // Case 2条件：叔叔是黑色，且当前节点是左孩子
+            // Case 2条件：叔叔是黑色，且当前节点是右孩子
              if (parent->left == node)
              {
                  Node *tmp;
@@ -209,7 +209,8 @@ static void rbtree_insert_fixup(RBRoot *root, Node *node) {
 *
 * 参数说明：
 *     root 红黑树的根
-*     node 插入的结点        // 对应《算法导论》中的z
+*     key
+*     co
 */
 void rbtree_insert(RBRoot *root, Type key, coroutine_t *co)
 {   
@@ -227,6 +228,7 @@ void rbtree_insert(RBRoot *root, Type key, coroutine_t *co)
 
     Node *y = NULL;
     Node *x = root->node;
+    if(x != NULL)
 
     // 1. 将红黑树当作一颗二叉查找树，将节点添加到二叉查找树中。
     while (x != NULL)

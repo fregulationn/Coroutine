@@ -27,16 +27,18 @@ static int coroutine_inner_process(int fd, uint32_t __events) {
 
 	schedule_t *sched = get_schedule();
 	coroutine_t *co = sched->current;
-	printf("yield---co's address: %p, sched's address: %p\n", co, co->sched);
 
 	// add events
 	coroutine_epoll_ctl(EPOLL_CTL_ADD, fd, __events);
 	co->fd = fd;
 	co->events = __events;
 	co->status = CO_STATUS_WAIT;
+	
 	// add to wait tree
 	rbtree_insert(sched->wait_tree, fd, co);
+
 	// it's time to yield.
+	printf("yield coroutine: %lu\n", co->id);
 	coroutine_yield(co);
 
 	// when come back
