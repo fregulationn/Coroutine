@@ -88,14 +88,5 @@ int coroutine_resume(coroutine_t *co) {
 
 void coroutine_free(coroutine_t *co) {
     if(co == NULL) return;
-
-    if(co->stack) {
-        free(co->stack);
-        co->stack = NULL;
-    }
-
-    if(co) {
-        free(co);
-    }
-
+    free(co);
 }

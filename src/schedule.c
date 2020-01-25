@@ -70,6 +70,8 @@ void schedule_running() {
         {
             // 如果dead队列非空，说明有协程已经运行结束
             co = QUE_FIRST(sched->dead);
+            // 从dead队列移除
+            QUE_REMOVE(sched->dead);
             // 销毁
             coroutine_free(co);
         }

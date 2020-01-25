@@ -26,8 +26,8 @@
 // 当前协程yield，此时处于这个状态
 #define CO_STATUS_WAIT 3
 
-#define CO_MAX_EVENTS 1024
-#define CO_MAX_STACKSIZE (16 * 1024)
+#define CO_MAX_EVENTS 10240
+#define CO_MAX_STACKSIZE (4 * 1024)
 
 struct schedule;
 typedef struct schedule schedule_t;
