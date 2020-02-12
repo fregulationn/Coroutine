@@ -16,7 +16,10 @@
 #include "coctx.h"
 #include "co_queue.h"
 #include "co_tree.h"
+#include "co_hash.h"
 
+// 调度策略
+#define SCHED_HASH   1
 // 协程执行结束
 #define CO_STATUS_DEAD 0
 // 刚创建协程状态
@@ -71,7 +74,12 @@ typedef struct schedule {
 
     Queue_t *ready;
     Queue_t *dead;
+
+#if (SCHED_HASH == 1)
+    struct SchedTable table;
+#else
     RBRoot *wait_tree;
+#endif
 
     // allocate id for new-created coroutines
     uint64_t spawned_coroutines;
@@ -114,5 +122,6 @@ int coroutine_socket(int domain, int type, int protocol);
 
 int coroutine_epoll_create();
 int coroutine_epoll_wait();
+int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events);
 
 #endif

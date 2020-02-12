@@ -15,10 +15,10 @@ all: $(BIN_DIR)Server $(BIN_DIR)Client $(BIN_DIR)httpserver
 .PHONY:all
 
 $(BIN_DIR)httpserver: $(OBJS_SRC) $(OBJS_DEMO)
-	$(CC) -o $@ $(BIN_DIR)httpserver.o $(BIN_DIR)coroutine.o $(BIN_DIR)schedule.o $(BIN_DIR)coctx.o $(BIN_DIR)coswapctx.o $(BIN_DIR)co_api.o $(BIN_DIR)co_queue.o $(BIN_DIR)co_tree.o $(CFLAGS)
+	$(CC) -o $@ $(BIN_DIR)httpserver.o $(BIN_DIR)coroutine.o $(BIN_DIR)schedule.o $(BIN_DIR)coctx.o $(BIN_DIR)coswapctx.o $(BIN_DIR)co_api.o $(BIN_DIR)co_queue.o $(BIN_DIR)co_tree.o $(BIN_DIR)co_hash.o $(CFLAGS)
 
 $(BIN_DIR)Server: $(OBJS_SRC) $(OBJS_DEMO)
-	$(CC) -o $@ $(BIN_DIR)Server.o $(BIN_DIR)coroutine.o $(BIN_DIR)schedule.o $(BIN_DIR)coctx.o $(BIN_DIR)coswapctx.o $(BIN_DIR)co_api.o $(BIN_DIR)co_queue.o $(BIN_DIR)co_tree.o $(CFLAGS)
+	$(CC) -o $@ $(BIN_DIR)Server.o $(BIN_DIR)coroutine.o $(BIN_DIR)schedule.o $(BIN_DIR)coctx.o $(BIN_DIR)coswapctx.o $(BIN_DIR)co_api.o $(BIN_DIR)co_queue.o $(BIN_DIR)co_tree.o $(BIN_DIR)co_hash.o $(CFLAGS)
 
 $(BIN_DIR)Client: $(BIN_DIR)Client.o
 	$(CC) -o $@ $^

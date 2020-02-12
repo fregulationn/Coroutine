@@ -13,7 +13,7 @@ int coroutine_epoll_wait() {
 	return epoll_wait(sched->epollfd, sched->eventlist, CO_MAX_EVENTS, -1);
 }
 
-static int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events) {
+int coroutine_epoll_ctl(int __op, int __fd, uint32_t __events) {
 	schedule_t *sched = get_schedule();
 
 	struct epoll_event ev;
@@ -34,8 +34,13 @@ static int coroutine_inner_process(int fd, uint32_t __events) {
 	co->events = __events;
 	co->status = CO_STATUS_WAIT;
 	
+#if (SCHED_HASH == 1)
+	// add to sched table
+	addToTable(&sched->table, fd, co);
+#else
 	// add to wait tree
 	rbtree_insert(sched->wait_tree, fd, co);
+#endif
 
 	// it's time to yield.
 	printf("yield coroutine: %lu\n", co->id);
@@ -47,11 +52,15 @@ static int coroutine_inner_process(int fd, uint32_t __events) {
 	co->events = 0;
 	co->status = CO_STATUS_RUNNING;
 
+#if (SCHED_HASH == 1)
+	// remove from sched table
+	delfromTable(&sched->table, fd);
+#else
 	// remove from wait tree
 	rbtree_delete(sched->wait_tree, fd);
+#endif
 
 	return 0;
-
 }
 
 int coroutine_socket(int domain, int type, int protocol) {

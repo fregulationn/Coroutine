@@ -458,7 +458,6 @@ void serve_file(int client, const char *filename)
 #endif
 
     resource = fopen(filename, "r");
-    printf("%s\n", filename);
     if (resource == NULL)
         not_found(client);
     else

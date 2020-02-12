@@ -33,8 +33,14 @@ int schedule_create(int stack_size) {
     QUE_INIT(&sched->ready);
     // create dead queue
     QUE_INIT(&sched->dead);
+
+#if (SCHED_HASH == 1)
+    // create schedule table
+    init_schedtab(&sched->table);
+#else
     // create wait tree
     sched->wait_tree = create_rbtree();
+#endif
 
     bzero(&sched->ctx, sizeof(sched->ctx));
 
@@ -94,12 +100,29 @@ void schedule_running() {
 
             if(__events & EPOLLHUP) {
                 printf("Peer reset connection\n");
+
+#if (SCHED_HASH == 1)
+                // delete from sched table
+                delfromTable(&sched->table, fd);
+#else
+                rbtree_delete(sched->wait_tree, fd);
+#endif
+
+                coroutine_epoll_ctl(EPOLL_CTL_DEL, fd, EPOLLHUP);
+                // close this fd
+                close(fd);  
                 continue;
             }
 
+#if (SCHED_HASH == 1)
+            // search in sched table
+            co = co_search(&sched->table, fd);
+#else
             // 通过fd获取wait tree上的协程
             Node* ret = rbtree_search(sched->wait_tree, fd);
             co = ret->co;
+#endif
+
             if(co != NULL) {
                 // resume co
                 coroutine_resume(co);
